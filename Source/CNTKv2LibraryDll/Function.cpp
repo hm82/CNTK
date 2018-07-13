@@ -2287,36 +2287,6 @@ namespace CNTK
 
     //multiple axes reduction below:
 
-    FunctionPtr ReduceSum(const Variable& operand, const std::vector<Axis>& axis, const std::wstring& name)
-    {
-        return Internal::ReduceElements(operand, PrimitiveFunction::InternalSumReductionOpName, axis, name);
-    }
-
-    FunctionPtr ReduceLogSum(const Variable& operand, const std::vector<Axis>& axis, const std::wstring& name)
-    {
-        return Internal::ReduceElements(operand, PrimitiveFunction::InternalLogSumReductionOpName, axis, name);
-    }
-
-    FunctionPtr ReduceMean(const Variable& operand, const std::vector<Axis>& axis, const std::wstring& name)
-    {
-        return Internal::ReduceElements(operand, PrimitiveFunction::InternalMeanReductionOpName, axis, name);
-    }
-
-    FunctionPtr ReduceMax(const Variable& operand, const std::vector<Axis>& axis, const std::wstring& name)
-    {
-        return Internal::ReduceElements(operand, PrimitiveFunction::InternalMaxReductionOpName, axis, name);
-    }
-
-    FunctionPtr ReduceMin(const Variable& operand, const std::vector<Axis>& axis, const std::wstring& name)
-    {
-        return Internal::ReduceElements(operand, PrimitiveFunction::InternalMinReductionOpName, axis, name);
-    }
-
-    FunctionPtr ReduceProd(const Variable& operand, const std::vector<Axis>& axis, const std::wstring& name)
-    {
-        return Internal::ReduceElements(operand, PrimitiveFunction::InternalProdReductionOpName, axis, name);
-    }
-
     FunctionPtr ReduceFunctionAsBlock(const Variable& operand, const std::vector<Axis>& axes, bool keepDims,
         const std::function<FunctionPtr(const Variable&, const std::vector<Axis>& axes)> func,
         const std::wstring opName, const std::wstring& name)
@@ -2347,11 +2317,46 @@ namespace CNTK
         return AsBlock(std::move(result), { { operandPlaceholder, operand } }, std::move(additionalProperties), opName, name);
     }
 
+    FunctionPtr ReduceSum(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
+    {
+        auto func = [](const Variable& placeholder, const std::vector<Axis>& axes) { return Internal::ReduceElements(placeholder, PrimitiveFunction::InternalSumReductionOpName, axes); };
+        return ReduceFunctionAsBlock(operand, axes, keepDims, func, PrimitiveFunction::InternalSumReductionOpName, name);
+    }
+
+    FunctionPtr ReduceLogSum(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
+    {
+        auto func = [](const Variable& placeholder, const std::vector<Axis>& axes) { return Internal::ReduceElements(placeholder, PrimitiveFunction::InternalLogSumReductionOpName, axes); };
+        return ReduceFunctionAsBlock(operand, axes, keepDims, func, PrimitiveFunction::InternalLogSumReductionOpName, name);
+    }
+
+    FunctionPtr ReduceMean(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
+    {
+        auto func = [](const Variable& placeholder, const std::vector<Axis>& axes) { return Internal::ReduceElements(placeholder, PrimitiveFunction::InternalMeanReductionOpName, axes); };
+        return ReduceFunctionAsBlock(operand, axes, keepDims, func, PrimitiveFunction::InternalMeanReductionOpName, name);
+    }
+
+    FunctionPtr ReduceMax(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
+    {
+        auto func = [](const Variable& placeholder, const std::vector<Axis>& axes) { return Internal::ReduceElements(placeholder, PrimitiveFunction::InternalMaxReductionOpName, axes); };
+        return ReduceFunctionAsBlock(operand, axes, keepDims, func, PrimitiveFunction::InternalMaxReductionOpName, name);
+    }
+
+    FunctionPtr ReduceMin(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
+    {
+        auto func = [](const Variable& placeholder, const std::vector<Axis>& axes) { return Internal::ReduceElements(placeholder, PrimitiveFunction::InternalMinReductionOpName, axes); };
+        return ReduceFunctionAsBlock(operand, axes, keepDims, func, PrimitiveFunction::InternalMinReductionOpName, name);
+    }
+
+    FunctionPtr ReduceProd(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
+    {
+        auto func = [](const Variable& placeholder, const std::vector<Axis>& axes) { return Internal::ReduceElements(placeholder, PrimitiveFunction::InternalProdReductionOpName, axes); };
+        return ReduceFunctionAsBlock(operand, axes, keepDims, func, PrimitiveFunction::InternalProdReductionOpName, name);
+    }
+
     FunctionPtr ReduceL1(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
     {
         auto func = [](const Variable& placeholder, const std::vector<Axis>& axes) { return ReduceSum(Abs(placeholder), axes); };
-        auto f = ReduceFunctionAsBlock(operand, axes, keepDims, func, L"ReduceL1", name);
-        return f;
+        return ReduceFunctionAsBlock(operand, axes, keepDims, func, L"ReduceL1", name);
     }
 
     FunctionPtr ReduceL2(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
@@ -2362,8 +2367,7 @@ namespace CNTK
 
     FunctionPtr ReduceSumSquare(const Variable& operand, const std::vector<Axis>& axes, bool keepDims, const std::wstring& name)
     {
-        auto func = [](const Variable& placeholder, const std::vector<Axis>& axes)
-        { return ReduceSum(ElementTimes(placeholder, placeholder), axes); };
+        auto func = [](const Variable& placeholder, const std::vector<Axis>& axes) { return ReduceSum(ElementTimes(placeholder, placeholder), axes); };
         return ReduceFunctionAsBlock(operand, axes, keepDims, func, L"ReduceSumSquare", name);
     }
 
